@@ -11,6 +11,7 @@ import io.ktor.http.HttpHeaders
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 import model.ImageDataClass
+import singleton.ApiHeader
 
 
 class ApiClass {
@@ -28,7 +29,7 @@ class ApiClass {
         val response = client.get("https://api.pexels.com/v1/curated?per_page=15")
         {
             headers {
-                append(HttpHeaders.Authorization, "Your API Key")
+                append(HttpHeaders.Authorization, ApiHeader.auth)
             }
         }
 
