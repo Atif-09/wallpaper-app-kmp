@@ -41,26 +41,6 @@ fun App() {
         Column(
             Modifier.fillMaxSize().background(Color(0xFF202020))
         ) {
-            /*  Button(onClick = {
-                  scope.launch {
-                      urlList = ApiClass().greeting().photos
-                  }
-
-              }) {
-                  Text("Ktor!")
-              }
-              println("List of Photos $urlList")
-
-              LazyVerticalGrid(columns = GridCells.Adaptive(150.dp),modifier = Modifier.fillMaxSize()) {
-                  items(urlList) { it ->
-                      Image(
-                          rememberImagePainter(it.src.original),
-                          null,
-                          modifier = Modifier.size(150.dp).padding(9.dp).clip(RoundedCornerShape(15.dp))
-
-                      )
-                  }
-              }*/
             if (getPlatform().name.contains("Desktop") || getPlatform().name.contains("Web")) {
                 LargeMainScreenUI()
             } else {
@@ -70,3 +50,24 @@ fun App() {
     }
 
 }
+
+/*  Button(onClick = {
+                 scope.launch {
+                     urlList = ApiClass().greeting().photos
+                 }
+
+             }) {
+                 Text("Ktor!")
+             }
+             println("List of Photos $urlList")
+
+             LazyVerticalGrid(columns = GridCells.Adaptive(150.dp),modifier = Modifier.fillMaxSize()) {
+                 items(urlList) { it ->
+                     Image(
+                         rememberImagePainter(it.src.original),
+                         null,
+                         modifier = Modifier.size(150.dp).padding(9.dp).clip(RoundedCornerShape(15.dp))
+
+                     )
+                 }
+             }*/
