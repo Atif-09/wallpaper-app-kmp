@@ -1,5 +1,6 @@
 package screens
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -12,11 +13,16 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.items
+import androidx.compose.foundation.lazy.staggeredgrid.itemsIndexed
 import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
@@ -36,6 +42,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -45,20 +52,65 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import api.ApiClass
+import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.navigator.LocalNavigator
+import cafe.adriel.voyager.navigator.currentOrThrow
+import com.seiko.imageloader.rememberImagePainter
 import kmpnetworktemplate.composeapp.generated.resources.Res
 import kmpnetworktemplate.composeapp.generated.resources.image
 import kmpnetworktemplate.composeapp.generated.resources.image_1
 import kmpnetworktemplate.composeapp.generated.resources.image_2
 import kmpnetworktemplate.composeapp.generated.resources.logo
 import kmpnetworktemplate.composeapp.generated.resources.pacifico_regular
+import kotlinx.coroutines.launch
+import model.Photo
+import model.ShowScreenDataClass
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.Font
 import org.jetbrains.compose.resources.painterResource
 
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun LargeMainScreenUI() {
-    Row(modifier = Modifier.fillMaxSize()) {
+    val scope = rememberCoroutineScope()
+    val navigator = LocalNavigator.currentOrThrow
+    var urlList by remember { mutableStateOf<List<Photo>>(emptyList()) }
+    scope.launch {
+        urlList = ApiClass().greeting().photos
+    }
+    Column(modifier = Modifier.fillMaxSize()) {
+
+        LazyVerticalGrid(columns = GridCells.Adaptive(200.dp), modifier = Modifier.padding(horizontal = 12.dp, vertical = 12.dp), horizontalArrangement = Arrangement.spacedBy(9.dp), verticalArrangement = Arrangement.spacedBy(9.dp)){
+            itemsIndexed(urlList) { index, imageResource ->
+                println("Size of the photos${urlList.size}")
+                Card(
+                    modifier = Modifier.size(200.dp),
+                    shape = RoundedCornerShape(7.dp),
+                    border = BorderStroke(1.dp, Color(0xFFC4C4C4)),
+                    onClick = {
+                        navigator.push(ShowLargeImageScreenNav(ShowScreenDataClass(imageResource.alt, imageResource.src.original)))
+                    }
+                ) {
+                    /*Image(
+                        imageResource, null, modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )*/
+                    Image(
+                        rememberImagePainter(imageResource.src.medium),
+                        null,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                }
+
+            }
+        }
+
+    }
+
+/*    Row(modifier = Modifier.fillMaxSize()) {
         LeftScreenUI(modifier = Modifier.fillMaxWidth(0.4f))
         Divider(
             color = Color.White,
@@ -66,7 +118,7 @@ fun LargeMainScreenUI() {
             modifier = Modifier.width(2.dp).fillMaxHeight().padding(horizontal = 3.dp)
         )
         RightScreenUI(modifier = Modifier.fillMaxWidth(1f))
-    }
+    }*/
 }
 
 
@@ -300,3 +352,11 @@ fun RightScreenUI(modifier: Modifier) {
 }
 
 data class ChipsNames(val name: String)
+
+class ShowLargeImageScreenNav(val data: ShowScreenDataClass) : Screen {
+
+    @Composable
+    override fun Content() {
+        LargeShowImageUI(data)
+    }
+}

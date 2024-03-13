@@ -30,7 +30,8 @@ fun App() {
             Modifier.fillMaxSize().background(Color(0xFF202020))
         ) {
             if (getPlatform().name.contains("Desktop") || getPlatform().name.contains("Web")) {
-                LargeMainScreenUI()
+                Navigator(LargeMainScreenNav())
+                //LargeMainScreenUI()
             } else {
                 Navigator(ShowMainScreen())
                 //MainScreenUI()
@@ -45,6 +46,14 @@ class ShowMainScreen() : Screen {
     @Composable
     override fun Content() {
         MainScreenUI()
+    }
+}
+
+class LargeMainScreenNav() : Screen {
+
+    @Composable
+    override fun Content() {
+        LargeMainScreenUI()
     }
 }
 
