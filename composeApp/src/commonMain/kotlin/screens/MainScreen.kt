@@ -2,8 +2,6 @@ package screens
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.interaction.InteractionSource
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,16 +10,13 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
-import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.foundation.lazy.staggeredgrid.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -31,8 +26,6 @@ import androidx.compose.material.ChipDefaults
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
-import androidx.compose.material.TextField
-import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.Search
@@ -52,10 +45,12 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import api.ApiClass
+import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.navigator.LocalNavigator
+import cafe.adriel.voyager.navigator.currentOrThrow
 import com.seiko.imageloader.rememberImagePainter
 import kmpnetworktemplate.composeapp.generated.resources.Res
 import kmpnetworktemplate.composeapp.generated.resources.image_1
@@ -63,6 +58,7 @@ import kmpnetworktemplate.composeapp.generated.resources.image_2
 import kmpnetworktemplate.composeapp.generated.resources.pacifico_regular
 import kotlinx.coroutines.launch
 import model.Photo
+import model.ShowScreenDataClass
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.Font
 import org.jetbrains.compose.resources.painterResource
@@ -78,15 +74,16 @@ fun MainScreenUI() {
         ChipsNames("Architect"),
         ChipsNames("Tech")
     )
+    val scope = rememberCoroutineScope()
+    var urlList by remember { mutableStateOf<List<Photo>>(emptyList()) }
     var selected by remember { mutableStateOf(false) }
     var showSearch by remember { mutableStateOf(false) }
     var searchText by remember { mutableStateOf("") }
-    /*    var urlList by remember { mutableStateOf<List<Photo>>(emptyList()) }
-        val scope = rememberCoroutineScope()
+    val navigator = LocalNavigator.currentOrThrow
 
-        scope.launch {
+    scope.launch {
             urlList = ApiClass().greeting().photos
-        }*/
+        }
     Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize()) {
             Box(modifier = Modifier.fillMaxWidth()) {
@@ -140,7 +137,11 @@ fun MainScreenUI() {
                         Card(
                             modifier = Modifier.fillMaxWidth(1f).padding(6.dp),
                             shape = RoundedCornerShape(50),
-                            backgroundColor = Color(0xFF202020)
+                            backgroundColor = Color(0xFF202020),
+                            onClick = {
+                                scope.launch {
+                                urlList = ApiClass().searchImage(searchText).photos
+                            }}
                         ) {
                             Box(modifier = Modifier.fillMaxSize()) {
 
@@ -203,30 +204,32 @@ fun MainScreenUI() {
             )
             LazyVerticalStaggeredGrid(
                 columns = StaggeredGridCells.Fixed(2),
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp),
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 12.dp),
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalItemSpacing = 12.dp
             ) {
-                itemsIndexed(imageList) { index, imageResource ->
-
-                    val height = if (index == 1) 250.dp else 170.dp
+                itemsIndexed(urlList) { index, imageResource ->
+                    println("Size of the photos${urlList.size}")
+                    val height = if (index == 1 || index == 78) 250.dp else 170.dp
                     Card(
-                        modifier = if (index == 1) Modifier.width(170.dp)
+                        modifier = if (index == 1 || index == 78) Modifier.width(170.dp)
                             .height(250.dp) else Modifier.size(170.dp),
                         shape = RoundedCornerShape(7),
-                        border = BorderStroke(1.dp, Color(0xFFC4C4C4))
+                        border = BorderStroke(1.dp, Color(0xFFC4C4C4)),
+                        onClick = {
+                            navigator.push(ShowImageScreenNav(ShowScreenDataClass(imageResource.alt, imageResource.src.original)))
+                        }
                     ) {
-                        Image(
+                        /*Image(
                             imageResource, null, modifier = Modifier.fillMaxSize(),
                             contentScale = ContentScale.Crop
+                        )*/
+                        Image(
+                            rememberImagePainter(imageResource.src.medium),
+                            null,
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
                         )
-                        /*
-                                                Image(
-                                                    rememberImagePainter(imageResource.src.original),
-                                                    null,
-                                                    modifier = Modifier.fillMaxSize(),
-                                                    contentScale = ContentScale.Crop
-                                                )*/
                     }
 
                 }
@@ -386,5 +389,13 @@ fun MainScreenUI() {
 
             }
         }
+    }
+}
+
+class ShowImageScreenNav(val data: ShowScreenDataClass) : Screen {
+
+    @Composable
+    override fun Content() {
+        ShowImageUI(data)
     }
 }

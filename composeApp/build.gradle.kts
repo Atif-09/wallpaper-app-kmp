@@ -68,6 +68,7 @@ kotlin {
             implementation("io.ktor:ktor-client-content-negotiation:2.3.7")
             implementation("io.ktor:ktor-serialization-kotlinx-json:2.3.7")
             api("io.github.qdsfdhvh:image-loader:1.7.6")
+            implementation("cafe.adriel.voyager:voyager-navigator:1.0.0")
 
         }
         iosMain.dependencies {
