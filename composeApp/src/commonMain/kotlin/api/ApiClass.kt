@@ -23,8 +23,8 @@ class ApiClass {
         }
     }
 
-    suspend fun greeting(): ImageDataClass {
-        val response = client.get("https://api.pexels.com/v1/curated?per_page=80")
+    suspend fun greeting(url:String): ImageDataClass {
+        val response = client.get(url)
         {
             headers {
                 append(HttpHeaders.Authorization, ApiHeader.auth)
@@ -34,8 +34,8 @@ class ApiClass {
         return response.body()
     }
 
-    suspend fun searchImage(search:String): ImageDataClass {
-        val response = client.get("https://api.pexels.com/v1/search?query=$search&per_page=80")
+    suspend fun searchImage(url:String): ImageDataClass {
+        val response = client.get(url)
         {
             headers {
                 append(HttpHeaders.Authorization, ApiHeader.auth)

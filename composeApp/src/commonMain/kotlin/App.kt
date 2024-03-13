@@ -16,9 +16,7 @@ import model.Photo
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import screens.LargeMainScreenUI
 import screens.MainScreenUI
-import screens.ShowImageUI
 
-@OptIn(ExperimentalResourceApi::class)
 @Composable
 fun App() {
     MaterialTheme {
