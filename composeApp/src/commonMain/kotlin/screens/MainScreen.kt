@@ -2,6 +2,7 @@ package screens
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,11 +14,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.itemsIndexed
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.Card
@@ -44,7 +44,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import api.ApiClass
@@ -56,18 +55,20 @@ import kmpnetworktemplate.composeapp.generated.resources.Res
 import kmpnetworktemplate.composeapp.generated.resources.image_1
 import kmpnetworktemplate.composeapp.generated.resources.image_2
 import kmpnetworktemplate.composeapp.generated.resources.pacifico_regular
+import kmpnetworktemplate.composeapp.generated.resources.ubuntu_bold
 import kotlinx.coroutines.launch
 import model.Photo
 import model.ShowScreenDataClass
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.Font
 import org.jetbrains.compose.resources.painterResource
+import kotlin.random.Random
 
 @OptIn(ExperimentalResourceApi::class, ExperimentalMaterialApi::class)
 @Composable
 fun MainScreenUI() {
 
-    val listOfChips = mutableListOf<ChipsNames>(
+    val listOfChips = mutableListOf(
         ChipsNames("Discover"),
         ChipsNames("Nature"),
         ChipsNames("Anime"),
@@ -76,14 +77,29 @@ fun MainScreenUI() {
     )
     val scope = rememberCoroutineScope()
     var urlList by remember { mutableStateOf<List<Photo>>(emptyList()) }
-    var selected by remember { mutableStateOf(false) }
+    var discoverSelected by remember { mutableStateOf(true) }
+    var natureSelected by remember { mutableStateOf(false) }
+    var animeSelected by remember { mutableStateOf(false) }
+    var architectSelected by remember { mutableStateOf(false) }
+    var techSelected by remember { mutableStateOf(false) }
     var showSearch by remember { mutableStateOf(false) }
     var searchText by remember { mutableStateOf("") }
     val navigator = LocalNavigator.currentOrThrow
+    val page = { Random.nextInt(0, 20) }
+    val url = "https://api.pexels.com/v1/curated/?page=1&per_page=80"
 
+
+    var currentPage by remember { mutableStateOf(1) }
+    var nextPageUrl by remember { mutableStateOf<String?>(null) }
+
+    var searchCurrentPage by remember { mutableStateOf(1) }
+    var searchNextPageUrl by remember { mutableStateOf<String?>(null) }
     scope.launch {
-            urlList = ApiClass().greeting().photos
-        }
+        val imageData = ApiClass().greeting(url)
+        urlList = imageData.photos
+        nextPageUrl = imageData.next_page
+        currentPage = imageData.page
+    }
     Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize()) {
             Box(modifier = Modifier.fillMaxWidth()) {
@@ -120,69 +136,227 @@ fun MainScreenUI() {
                     Row(modifier = Modifier.fillMaxWidth()) {
                         BasicTextField(
                             value = searchText,
-                            onValueChange = {searchText = it},
-                            modifier = Modifier.fillMaxWidth(0.8f).align(Alignment.CenterVertically).padding(start = 12.dp),
-                         /*   colors = TextFieldDefaults.textFieldColors(
-                                textColor = Color.White,
-                                disabledPlaceholderColor = Color(0xFF3D3D3D),
-                                placeholderColor = Color(0xFF3D3D3D),
-                                backgroundColor = Color.Transparent,
-                                cursorColor = Color.White,
-                                focusedIndicatorColor = Color.Transparent,
-                                disabledIndicatorColor = Color.Transparent
-                            ),*/
-                            textStyle = TextStyle(brush = brush, fontSize = 18.sp),
+                            onValueChange = { searchText = it },
+                            modifier = Modifier.fillMaxWidth(0.8f).align(Alignment.CenterVertically)
+                                .padding(start = 12.dp),
+                            cursorBrush = brush,
+                            /*   colors = TextFieldDefaults.textFieldColors(
+                                   textColor = Color.White,
+                                   disabledPlaceholderColor = Color(0xFF3D3D3D),
+                                   placeholderColor = Color(0xFF3D3D3D),
+                                   backgroundColor = Color.Transparent,
+                                   cursorColor = Color.White,
+                                   focusedIndicatorColor = Color.Transparent,
+                                   disabledIndicatorColor = Color.Transparent
+                               ),*/
+                            textStyle = TextStyle(
+                                brush = brush,
+                                fontSize = 18.sp,
+                                fontFamily = FontFamily(Font(Res.font.ubuntu_bold))
+                            ),
 //                            placeholder = { Text("Type to search something...") },
-                            )
+                        )
+                        val searchUrl =
+                            "https://api.pexels.com/v1/search?query=$searchText&per_page=80"
                         Card(
                             modifier = Modifier.fillMaxWidth(1f).padding(6.dp),
                             shape = RoundedCornerShape(50),
                             backgroundColor = Color(0xFF202020),
                             onClick = {
                                 scope.launch {
-                                urlList = ApiClass().searchImage(searchText).photos
-                            }}
+                                    val imageData = ApiClass().searchImage(searchUrl)
+                                    urlList = imageData.photos
+                                    searchNextPageUrl = imageData.next_page
+                                    searchCurrentPage = imageData.page
+                                }
+                            }
                         ) {
                             Box(modifier = Modifier.fillMaxSize()) {
 
                                 Text(
                                     "Go",
                                     modifier = Modifier.align(Alignment.Center),
-                                    color = Color.White
+                                    color = Color.White,
+                                    fontFamily = FontFamily(Font(Res.font.ubuntu_bold))
                                 )
                             }
                         }
                     }
 
                 } else {
-                    LazyRow(
+                    Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(9.dp),
                         modifier = Modifier.fillMaxWidth().padding(horizontal = 3.dp)
-                    ) {
-                        items(listOfChips) { chips ->
-                            Chip(
-                                modifier = Modifier,
-                                onClick = {
-                                    selected = true
-                                },
-                                content = {
-                                    Text(
-                                        chips.name,
-                                        color = Color.White,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                },
-                                colors = ChipDefaults.chipColors(
-                                    backgroundColor = if (selected) Color(
-                                        0xFF144C6C
-                                    ) else Color(0xFF202020)
-                                )
-
+                            .horizontalScroll(
+                                rememberScrollState()
                             )
+                    ) {
+                        Chip(
+                            modifier = Modifier,
+                            onClick = {
+                                discoverSelected = true
+                                natureSelected = false
+                                animeSelected = false
+                                architectSelected = false
+                                techSelected = false
+                            },
+                            content = {
+                                Text(
+                                    "Discover",
+                                    color = Color.White,
+                                    fontFamily = FontFamily(Font(Res.font.ubuntu_bold))
+                                )
+                            },
+                            colors = ChipDefaults.chipColors(
+                                backgroundColor = if (discoverSelected) Color(
+                                    0xFF144C6C
+                                ) else Color(0xFF202020)
+                            )
+
+                        )
+
+                        Chip(
+                            modifier = Modifier,
+                            onClick = {
+                                discoverSelected = false
+                                natureSelected = true
+                                animeSelected = false
+                                architectSelected = false
+                                techSelected = false
+                            },
+                            content = {
+                                Text(
+                                    "Nature",
+                                    color = Color.White,
+                                    fontFamily = FontFamily(Font(Res.font.ubuntu_bold))
+                                )
+                            },
+                            colors = ChipDefaults.chipColors(
+                                backgroundColor = if (natureSelected) Color(
+                                    0xFF144C6C
+                                ) else Color(0xFF202020)
+                            )
+
+                        )
+                        if (natureSelected) {
+                            val natureUrl =
+                                "https://api.pexels.com/v1/search?query=nature&per_page=80"
+                            scope.launch {
+                                val imageData = ApiClass().searchImage(natureUrl)
+                                urlList = imageData.photos
+                                searchNextPageUrl = imageData.next_page
+                                searchCurrentPage = imageData.page
+                            }
                         }
 
+                        Chip(
+                            modifier = Modifier,
+                            onClick = {
+                                discoverSelected = false
+                                natureSelected = false
+                                animeSelected = true
+                                architectSelected = false
+                                techSelected = false
+                            },
+                            content = {
+                                Text(
+                                    "Anime",
+                                    color = Color.White,
+                                    fontFamily = FontFamily(Font(Res.font.ubuntu_bold))
+                                )
+                            },
+                            colors = ChipDefaults.chipColors(
+                                backgroundColor = if (animeSelected) Color(
+                                    0xFF144C6C
+                                ) else Color(0xFF202020)
+                            )
+
+                        )
+                        if (animeSelected){
+                            val natureUrl =
+                                "https://api.pexels.com/v1/search?query=anime&per_page=80"
+                            scope.launch {
+                                val imageData = ApiClass().searchImage(natureUrl)
+                                urlList = imageData.photos
+                                searchNextPageUrl = imageData.next_page
+                                searchCurrentPage = imageData.page
+                            }
+                        }
+
+                        Chip(
+                            modifier = Modifier,
+                            onClick = {
+                                discoverSelected = false
+                                natureSelected = false
+                                animeSelected = false
+                                architectSelected = true
+                                techSelected = false
+                            },
+                            content = {
+                                Text(
+                                    "Architect",
+                                    color = Color.White,
+                                    fontFamily = FontFamily(Font(Res.font.ubuntu_bold))
+                                )
+                            },
+                            colors = ChipDefaults.chipColors(
+                                backgroundColor = if (architectSelected) Color(
+                                    0xFF144C6C
+                                ) else Color(0xFF202020)
+                            )
+
+                        )
+                        if (architectSelected) {
+                            val natureUrl =
+                                "https://api.pexels.com/v1/search?query=architect&per_page=80"
+                            scope.launch {
+                                val imageData = ApiClass().searchImage(natureUrl)
+                                urlList = imageData.photos
+                                searchNextPageUrl = imageData.next_page
+                                searchCurrentPage = imageData.page
+                            }
+
+                        }
+
+                        Chip(
+                            modifier = Modifier,
+                            onClick = {
+                                discoverSelected = false
+                                natureSelected = false
+                                animeSelected = false
+                                architectSelected = false
+                                techSelected = true
+                            },
+                            content = {
+                                Text(
+                                    "Tech",
+                                    color = Color.White,
+                                    fontFamily = FontFamily(Font(Res.font.ubuntu_bold))
+                                )
+                            },
+                            colors = ChipDefaults.chipColors(
+                                backgroundColor = if (techSelected) Color(
+                                    0xFF144C6C
+                                ) else Color(0xFF202020)
+                            )
+
+                        )
+                        if (techSelected) {
+                            val natureUrl =
+                                "https://api.pexels.com/v1/search?query=tech&per_page=80"
+                            scope.launch {
+                                val imageData = ApiClass().searchImage(natureUrl)
+                                urlList = imageData.photos
+                                searchNextPageUrl = imageData.next_page
+                                searchCurrentPage = imageData.page
+                            }
+                        }
+
+
                     }
+
+
                 }
 
 
@@ -204,7 +378,7 @@ fun MainScreenUI() {
             )
             LazyVerticalStaggeredGrid(
                 columns = StaggeredGridCells.Fixed(2),
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 12.dp),
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp),
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalItemSpacing = 12.dp
             ) {
@@ -215,9 +389,16 @@ fun MainScreenUI() {
                         modifier = if (index == 1 || index == 78) Modifier.width(170.dp)
                             .height(250.dp) else Modifier.size(170.dp),
                         shape = RoundedCornerShape(7),
-                        border = BorderStroke(1.dp, Color(0xFFC4C4C4)),
+                        border = BorderStroke(1.dp, Color(0x33FFFFFF)),
                         onClick = {
-                            navigator.push(ShowImageScreenNav(ShowScreenDataClass(imageResource.alt, imageResource.src.original)))
+                            navigator.push(
+                                ShowImageScreenNav(
+                                    ShowScreenDataClass(
+                                        imageResource.alt,
+                                        imageResource.src.original
+                                    )
+                                )
+                            )
                         }
                     ) {
                         /*Image(

@@ -21,6 +21,7 @@ import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -35,6 +36,8 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import com.seiko.imageloader.rememberImagePainter
 import kmpnetworktemplate.composeapp.generated.resources.Res
 import kmpnetworktemplate.composeapp.generated.resources.pacifico_regular
+import kmpnetworktemplate.composeapp.generated.resources.ubuntu_bold
+import kotlinx.coroutines.launch
 import model.ShowScreenDataClass
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.Font
@@ -55,14 +58,14 @@ fun ShowImageUI(data: ShowScreenDataClass) {
         }
 
         Card(
-            modifier = Modifier.fillMaxWidth().fillMaxHeight(0.08f)
+            modifier = Modifier.fillMaxWidth().fillMaxHeight(0.09f)
                 .padding(horizontal = 12.dp, vertical = 9.dp),
             shape = RoundedCornerShape(50),
             backgroundColor = Color(0xFF000000)
         ) {
             Box(modifier = Modifier.fillMaxWidth()) {
                 Card(
-                    modifier = Modifier.width(72.dp).align(Alignment.CenterStart),
+                    modifier = Modifier.width(120.dp).padding(9.dp).align(Alignment.CenterStart),
                     shape = RoundedCornerShape(100),
                     backgroundColor = Color(0xFF202020),
                     onClick = {
@@ -73,21 +76,18 @@ fun ShowImageUI(data: ShowScreenDataClass) {
                         Icon(
                             Icons.Default.ArrowBackIosNew,
                             null,
-                            modifier = Modifier.align(Alignment.CenterVertically),
+                            modifier = Modifier.align(Alignment.CenterVertically)
+                                .padding(horizontal = 6.dp),
                             tint = Color.White
                         )
                         Text(
                             "Back",
                             modifier = Modifier.align(Alignment.CenterVertically),
-                            color = Color.White
+                            color = Color.White,
+                            fontFamily = FontFamily(Font(Res.font.ubuntu_bold))
                         )
                     }
                 }
-
-                Text(
-                    data.name.uppercase(), color = Color.White,
-                    modifier = Modifier.align(Alignment.Center)
-                )
 
                 Row(modifier = Modifier.align(Alignment.CenterEnd)) {
                     Card(
@@ -146,6 +146,15 @@ fun ShowImageUI(data: ShowScreenDataClass) {
             }
 
 
+        }
+        if (data.name.isNotEmpty()) {
+            Box(modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    data.name.uppercase(), color = Color.White,
+                    modifier = Modifier.align(Alignment.Center).padding(horizontal = 12.dp),
+                    fontFamily = FontFamily(Font(Res.font.ubuntu_bold))
+                )
+            }
         }
 
         Card(
