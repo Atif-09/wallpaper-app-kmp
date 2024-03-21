@@ -20,6 +20,8 @@ import androidx.compose.foundation.lazy.staggeredgrid.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Card
 import androidx.compose.material.Chip
 import androidx.compose.material.ChipDefaults
@@ -42,8 +44,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import api.ApiClass
@@ -56,6 +61,7 @@ import kmpnetworktemplate.composeapp.generated.resources.image_1
 import kmpnetworktemplate.composeapp.generated.resources.image_2
 import kmpnetworktemplate.composeapp.generated.resources.pacifico_regular
 import kmpnetworktemplate.composeapp.generated.resources.ubuntu_bold
+import kmpnetworktemplate.composeapp.generated.resources.ubuntu_regular
 import kotlinx.coroutines.launch
 import model.Photo
 import model.ShowScreenDataClass
@@ -85,7 +91,7 @@ fun MainScreenUI() {
     var showSearch by remember { mutableStateOf(false) }
     var searchText by remember { mutableStateOf("") }
     val navigator = LocalNavigator.currentOrThrow
-    val page = { Random.nextInt(0, 20) }
+    val keyboardController = LocalSoftwareKeyboardController.current
     val url = "https://api.pexels.com/v1/curated/?page=1&per_page=80"
 
 
@@ -94,6 +100,9 @@ fun MainScreenUI() {
 
     var searchCurrentPage by remember { mutableStateOf(1) }
     var searchNextPageUrl by remember { mutableStateOf<String?>(null) }
+
+    val searchUrl =
+        "https://api.pexels.com/v1/search?query=$searchText&per_page=80"
     scope.launch {
         val imageData = ApiClass().greeting(url)
         urlList = imageData.photos
@@ -154,10 +163,37 @@ fun MainScreenUI() {
                                 fontSize = 18.sp,
                                 fontFamily = FontFamily(Font(Res.font.ubuntu_bold))
                             ),
+                            keyboardOptions = KeyboardOptions(
+                                capitalization = KeyboardCapitalization.Sentences,
+                                autoCorrect = true, imeAction = ImeAction.Search
+                            ),
+                            keyboardActions = KeyboardActions(
+                                onSearch = {
+                                    urlList = emptyList()
+                                    scope.launch {
+                                        val imageData = ApiClass().searchImage(searchUrl)
+                                        urlList = imageData.photos
+                                        nextPageUrl = imageData.next_page
+                                        currentPage = imageData.page
+
+                                    }
+                                    keyboardController!!.hide()
+                                }
+                            ),
+                            decorationBox = {
+                                it()
+                                if (searchText.isEmpty()) {
+                                    Text(
+                                        "Type to search something.......",
+                                        color = Color(0xFF3D3D3D),
+                                        fontSize = 15.sp,
+                                        fontFamily = FontFamily(Font(Res.font.ubuntu_regular))
+                                    )
+                                }
+                            }
 //                            placeholder = { Text("Type to search something...") },
                         )
-                        val searchUrl =
-                            "https://api.pexels.com/v1/search?query=$searchText&per_page=80"
+
                         Card(
                             modifier = Modifier.fillMaxWidth(1f).padding(6.dp),
                             shape = RoundedCornerShape(50),
@@ -273,7 +309,7 @@ fun MainScreenUI() {
                             )
 
                         )
-                        if (animeSelected){
+                        if (animeSelected) {
                             val natureUrl =
                                 "https://api.pexels.com/v1/search?query=anime&per_page=80"
                             scope.launch {
@@ -420,7 +456,7 @@ fun MainScreenUI() {
 
         ///////////// Bottom Nav /////////////////
         Card(
-            modifier = Modifier.height(80.dp)
+            modifier = Modifier.height(75.dp)
                 .padding(horizontal = 12.dp, vertical = 9.dp)
                 .align(Alignment.BottomCenter),
             shape = RoundedCornerShape(30.dp),
@@ -464,7 +500,9 @@ fun MainScreenUI() {
                                 "EXPLORE",
                                 color = Color.White,
                                 modifier = Modifier.align(Alignment.CenterVertically)
-                                    .padding(horizontal = 6.dp)
+                                    .padding(horizontal = 6.dp),
+                                fontFamily = FontFamily(Font(Res.font.ubuntu_regular))
+
                             )
 
                         }
@@ -512,7 +550,8 @@ fun MainScreenUI() {
                                 "SEARCH",
                                 color = Color.White,
                                 modifier = Modifier.align(Alignment.CenterVertically)
-                                    .padding(horizontal = 6.dp)
+                                    .padding(horizontal = 6.dp),
+                                fontFamily = FontFamily(Font(Res.font.ubuntu_regular))
                             )
 
                         }
