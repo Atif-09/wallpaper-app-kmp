@@ -82,7 +82,7 @@ fun LargeMainScreenUI() {
     var urlList by remember { mutableStateOf<List<Photo>>(emptyList()) }
     var searchText by remember { mutableStateOf("") }
     val url = "https://api.pexels.com/v1/curated/?page=1&per_page=80"
-    val searchUrl = "https://api.pexels.com/v1/search?query=$searchText&per_page=80"
+    val searchUrl = "https://api.pexels.com/v1/search?query=${searchText.trim().lowercase()}&per_page=80"
 
     var currentPage by remember { mutableStateOf(1) }
     var nextPageUrl by remember { mutableStateOf<String?>(null) }
@@ -99,6 +99,8 @@ fun LargeMainScreenUI() {
 
     val scaffoldState = rememberScaffoldState()
     scaffoldState.drawerState.isOpen
+
+
     Scaffold(
         scaffoldState = scaffoldState,
         backgroundColor = Color(0xFF202020),
@@ -131,11 +133,12 @@ fun LargeMainScreenUI() {
                     placeholder = { Text("Type something to search", color = Color(0xFF3D3D3D)) },
                     trailingIcon = {
                         IconButton(onClick = {
+
                             scope.launch {
                                 val imageData = ApiClass().searchImage(searchUrl)
                                 urlList = imageData.photos
-                                searchNextPageUrl = imageData.next_page
-                                searchCurrentPage = imageData.page
+                              /*  searchNextPageUrl = imageData.next_page
+                                searchCurrentPage = imageData.page*/
                             }
                         }) {
                             Icon(
@@ -264,15 +267,6 @@ fun LargeMainScreenUI() {
             )
             RightScreenUI(modifier = Modifier.fillMaxWidth(1f))
         }*/
-}
-
-
-
-@OptIn(ExperimentalResourceApi::class)
-@Composable
-fun ToggleDrawerButton(drawerState: DrawerState) {
-
-
 }
 
 

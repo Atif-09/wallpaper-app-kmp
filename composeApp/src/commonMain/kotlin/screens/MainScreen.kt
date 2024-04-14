@@ -68,7 +68,6 @@ import model.ShowScreenDataClass
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.Font
 import org.jetbrains.compose.resources.painterResource
-import kotlin.random.Random
 
 @OptIn(ExperimentalResourceApi::class, ExperimentalMaterialApi::class)
 @Composable
@@ -77,7 +76,7 @@ fun MainScreenUI() {
     val listOfChips = mutableListOf(
         ChipsNames("Discover"),
         ChipsNames("Nature"),
-        ChipsNames("Anime"),
+        ChipsNames("Space"),
         ChipsNames("Architect"),
         ChipsNames("Tech")
     )
@@ -85,7 +84,7 @@ fun MainScreenUI() {
     var urlList by remember { mutableStateOf<List<Photo>>(emptyList()) }
     var discoverSelected by remember { mutableStateOf(true) }
     var natureSelected by remember { mutableStateOf(false) }
-    var animeSelected by remember { mutableStateOf(false) }
+    var spaceSelected by remember { mutableStateOf(false) }
     var architectSelected by remember { mutableStateOf(false) }
     var techSelected by remember { mutableStateOf(false) }
     var showSearch by remember { mutableStateOf(false) }
@@ -101,8 +100,7 @@ fun MainScreenUI() {
     var searchCurrentPage by remember { mutableStateOf(1) }
     var searchNextPageUrl by remember { mutableStateOf<String?>(null) }
 
-    val searchUrl =
-        "https://api.pexels.com/v1/search?query=$searchText&per_page=80"
+
     scope.launch {
         val imageData = ApiClass().greeting(url)
         urlList = imageData.photos
@@ -141,6 +139,8 @@ fun MainScreenUI() {
                         )
                     )
                 }
+                val searchUrl =
+                    "https://api.pexels.com/v1/search?query=$searchText&per_page=80"
                 if (showSearch) {
                     Row(modifier = Modifier.fillMaxWidth()) {
                         BasicTextField(
@@ -233,7 +233,7 @@ fun MainScreenUI() {
                             onClick = {
                                 discoverSelected = true
                                 natureSelected = false
-                                animeSelected = false
+                                spaceSelected = false
                                 architectSelected = false
                                 techSelected = false
                             },
@@ -257,7 +257,7 @@ fun MainScreenUI() {
                             onClick = {
                                 discoverSelected = false
                                 natureSelected = true
-                                animeSelected = false
+                                spaceSelected = false
                                 architectSelected = false
                                 techSelected = false
                             },
@@ -291,27 +291,27 @@ fun MainScreenUI() {
                             onClick = {
                                 discoverSelected = false
                                 natureSelected = false
-                                animeSelected = true
+                                spaceSelected = true
                                 architectSelected = false
                                 techSelected = false
                             },
                             content = {
                                 Text(
-                                    "Anime",
+                                    "Space",
                                     color = Color.White,
                                     fontFamily = FontFamily(Font(Res.font.ubuntu_bold))
                                 )
                             },
                             colors = ChipDefaults.chipColors(
-                                backgroundColor = if (animeSelected) Color(
+                                backgroundColor = if (spaceSelected) Color(
                                     0xFF144C6C
                                 ) else Color(0xFF202020)
                             )
 
                         )
-                        if (animeSelected) {
+                        if (spaceSelected) {
                             val natureUrl =
-                                "https://api.pexels.com/v1/search?query=anime&per_page=80"
+                                "https://api.pexels.com/v1/search?query=space&per_page=80"
                             scope.launch {
                                 val imageData = ApiClass().searchImage(natureUrl)
                                 urlList = imageData.photos
@@ -325,7 +325,7 @@ fun MainScreenUI() {
                             onClick = {
                                 discoverSelected = false
                                 natureSelected = false
-                                animeSelected = false
+                                spaceSelected = false
                                 architectSelected = true
                                 techSelected = false
                             },
@@ -360,7 +360,7 @@ fun MainScreenUI() {
                             onClick = {
                                 discoverSelected = false
                                 natureSelected = false
-                                animeSelected = false
+                                spaceSelected = false
                                 architectSelected = false
                                 techSelected = true
                             },
@@ -467,7 +467,7 @@ fun MainScreenUI() {
 
             Row(
                 modifier = Modifier.padding(horizontal = 12.dp),
-                horizontalArrangement = Arrangement.spacedBy(18.dp),
+                horizontalArrangement = Arrangement.spacedBy(27.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
 
